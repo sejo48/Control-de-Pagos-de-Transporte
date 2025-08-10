@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Pagos de Transporte</title>
+    <!-- Tailwind CSS para un diseño rápido y responsivo -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts para una mejor tipografía -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Estilo personalizado para la fuente Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* Estilo para el mensaje de notificación */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            color: white;
+            z-index: 1000;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        .notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .notification.success {
+            background-color: #28a745; /* Verde */
+        }
+        .notification.error {
+            background-color: #dc3545; /* Rojo */
+        }
+        /* Estilos para los inputs en modo edición */
+        .edit-input {
+            width: 100%;
+            padding: 2px 4px;
+            border: 1px solid #cbd5e1;
+            border-radius: 0.25rem;
+            background-color: #f8fafc;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-5xl">
+        <!-- Encabezado de la aplicación -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">Control de Pagos de Transporte</h1>
+            <p class="text-gray-600 mt-2">Gestiona los pagos pendientes de forma sencilla.</p>
+        </header>
+
+        <main>
+            <!-- Columna para la lista de deudores y el total -->
+            <div class="bg-white p-6 rounded-lg shadow-md">
+                <div class="flex flex-wrap justify-between items-center mb-4 pb-4 border-b border-gray-200 gap-4">
+                    <h2 class="text-2xl font-semibold">Lista de Deudores</h2>
+                    <div class="flex flex-wrap gap-x-6 gap-y-2 text-right">
+                        <div>
+                            <p class="text-gray-600">Recaudado (Mes):</p>
+                            <p id="total-collected" class="text-xl font-bold text-green-600">₡0.00</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600">Total Pendiente:</p>
+                            <p id="total-amount" class="text-xl font-bold text-red-600">₡0.00</p>
+                        </div>
+                        <div>
+                            <p class="text-gray-600">Total General:</p>
+                            <p id="total-general" class="text-xl font-bold text-gray-800">₡0.00</p>
+                        </div>
+                    </div>
+                </div>
+                <!-- Contenedor de la lista de deudores -->
+                <div id="debtors-list-container">
+                    <div id="debtors-list" class="space-y-1">
+                        <!-- Los deudores se insertarán aquí dinámicamente -->
+                        <p class="text-gray-500 text-center py-4">No hay deudores registrados.</p>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <button id="add-row-btn" class="w-full bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-md hover:bg-gray-300 transition-colors duration-300">
+                        + Agregar Fila
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Elemento para mostrar notificaciones -->
+    <div id="notification" class="notification"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Referencias a los elementos del DOM
+            const debtorsList = document.getElementById('debtors-list');
+            const totalAmountEl = document.getElementById('total-amount');
+            const totalCollectedEl = document.getElementById('total-collected');
+            const totalGeneralEl = document.getElementById('total-general');
+            const addRowBtn = document.getElementById('add-row-btn');
+            const notificationEl = document.getElementById('notification');
+
+            // Lista inicial de deudores
+            const initialDebtors = [
+                { id: 1, name: 'Elvira', amount: '30000.00', date: '2025-08-10', paid: true },
+                { id: 2, name: 'Rocio', amount: '50000.00', date: '2025-08-10', paid: false },
+                { id: 3, name: 'Marielos', amount: '30000.00', date: '2025-08-10', paid: false },
+                { id: 4, name: 'Gudelia', amount: '35000.00', date: '2025-08-10', paid: true },
+                { id: 5, name: 'Bertilia', amount: '30000.00', date: '2025-07-10', paid: true },
+                { id: 6, name: 'Elizabeth', amount: '40000.00', date: '2025-08-10', paid: true },
+                { id: 7, name: 'Josefa', amount: '35000.00', date: '2025-08-10', paid: true },
+                { id: 8, name: 'Carmen', amount: '35000.00', date: '2025-08-10', paid: true },
+                { id: 9, name: 'Margarita', amount: '40000.00', date: '2025-08-10', paid: true },
+                { id: 10, name: 'Nannys', amount: '10000.00', date: '2025-08-10', paid: true },
+                { id: 11, name: 'Carmencita', amount: '30000.00', date: '2025-08-10', paid: true },
+                { id: 12, name: 'Don Amibal', amount: '50000.00', date: '2025-08-10', paid: false },
+                { id: 13, name: 'Fanny', amount: '45000.00', date: '2025-07-10', paid: true }
+            ];
+
+            let debtors = JSON.parse(localStorage.getItem('debtors'));
+            if (!debtors || debtors.length === 0) {
+                debtors = initialDebtors;
+            }
+
+            function showNotification(message, type = 'success') {
+                notificationEl.textContent = message;
+                notificationEl.className = `notification ${type} show`;
+                setTimeout(() => {
+                    notificationEl.className = 'notification';
+                }, 3000);
+            }
+
+            function saveDebtors() {
+                localStorage.setItem('debtors', JSON.stringify(debtors));
+            }
+
+            function formatCurrency(number) {
+                return `₡${parseFloat(number).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            }
+
+            function renderDebtors() {
+                debtorsList.innerHTML = '';
+
+                if (debtors.length === 0) {
+                    debtorsList.innerHTML = '<p class="text-gray-500 text-center py-4">No hay deudores registrados.</p>';
+                } else {
+                    debtors.forEach((debtor, index) => {
+                        const debtorEl = document.createElement('div');
+                        const isPaid = debtor.paid;
+                        const isEditing = debtor.editing;
+                        
+                        debtorEl.className = `flex items-center p-3 rounded-md transition-colors duration-200 ${isPaid ? 'bg-green-50 text-gray-500' : 'bg-white hover:bg-gray-50'}`;
+                        
+                        const nameContent = isEditing ? `<input type="text" value="${debtor.name}" class="edit-input name-edit-input">` : `<div class="font-medium ${isPaid ? 'line-through' : 'text-gray-800'}">${debtor.name}</div>`;
+                        const amountContent = isEditing ? `<input type="number" value="${debtor.amount}" class="edit-input amount-edit-input text-right">` : `<div class="font-medium text-right ${isPaid ? 'line-through' : 'text-gray-800'}">${formatCurrency(debtor.amount)}</div>`;
+                        const actionIcon = isEditing 
+                            ? `<button data-index="${index}" class="save-btn text-blue-500 hover:text-blue-700"><svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" /></svg></button>`
+                            : `<button data-index="${index}" class="edit-btn text-gray-400 hover:text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.5L15.232 5.232z" /></svg></button>`;
+                        
+                        debtorEl.innerHTML = `
+                            <div class="w-8 text-gray-500 font-medium">${index + 1}.</div>
+                            <div class="flex-grow">${nameContent}</div>
+                            <div class="w-4/12 md:w-3/12 pr-4">${amountContent}</div>
+                            <div class="w-auto flex justify-end items-center space-x-2 md:space-x-4">
+                                <input type="checkbox" data-index="${index}" class="paid-checkbox h-5 w-5 rounded border-gray-400 text-blue-600 focus:ring-blue-500 cursor-pointer" ${isPaid ? 'checked' : ''} ${isEditing ? 'disabled' : ''}>
+                                ${actionIcon}
+                                <button data-index="${index}" class="delete-btn text-gray-400 hover:text-red-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                                </button>
+                            </div>
+                        `;
+                        debtorsList.appendChild(debtorEl);
+                    });
+                }
+
+                updateTotals();
+            }
+
+            function updateTotals() {
+                const totalPending = debtors.filter(d => !d.paid).reduce((sum, d) => sum + parseFloat(d.amount), 0);
+                totalAmountEl.textContent = formatCurrency(totalPending);
+
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+                
+                const totalCollectedThisMonth = debtors
+                    .filter(d => {
+                        const paymentDate = new Date(d.date);
+                        return d.paid && paymentDate.getMonth() === currentMonth && paymentDate.getFullYear() === currentYear;
+                    })
+                    .reduce((sum, d) => sum + parseFloat(d.amount), 0);
+                totalCollectedEl.textContent = formatCurrency(totalCollectedThisMonth);
+
+                const totalGeneral = debtors.reduce((sum, d) => sum + parseFloat(d.amount), 0);
+                totalGeneralEl.textContent = formatCurrency(totalGeneral);
+            }
+
+            function addRow() {
+                debtors.forEach(d => d.editing = false);
+                const today = new Date().toISOString().split('T')[0];
+                const newDebtor = { id: Date.now(), name: 'Nuevo Deudor', amount: '0.00', date: today, paid: false, editing: true };
+                debtors.push(newDebtor);
+                saveAndRender();
+            }
+
+            function handleDebtorListClick(e) {
+                const target = e.target;
+
+                // Manejar clic en el checkbox
+                if (target.classList.contains('paid-checkbox')) {
+                    const index = parseInt(target.dataset.index, 10);
+                    if (isNaN(index) || (debtors[index] && debtors[index].editing)) {
+                        return; 
+                    }
+                    debtors[index].paid = target.checked;
+                    saveAndRender();
+                    return;
+                }
+
+                // Manejar clics en botones
+                const button = target.closest('button');
+                if (!button) return;
+
+                const index = parseInt(button.dataset.index, 10);
+                if (isNaN(index)) return;
+
+                if (button.classList.contains('delete-btn')) {
+                    if (debtors[index].editing) return; 
+                    const password = prompt("Para confirmar la eliminación, ingresa la clave:");
+                    if (password === '8384') {
+                        debtors.splice(index, 1);
+                        saveAndRender();
+                        showNotification('Deudor eliminado correctamente.', 'success');
+                    } else if (password !== null) {
+                        showNotification('Clave incorrecta. Eliminación cancelada.', 'error');
+                    }
+                } else if (button.classList.contains('edit-btn')) {
+                    debtors.forEach((d, i) => d.editing = (i === index));
+                    renderDebtors();
+                } else if (button.classList.contains('save-btn')) {
+                    const rowEl = button.closest('.flex');
+                    const newNameInput = rowEl.querySelector('.name-edit-input');
+                    const newAmountInput = rowEl.querySelector('.amount-edit-input');
+
+                    if (newNameInput && newAmountInput) {
+                        const newName = newNameInput.value.trim();
+                        const newAmount = newAmountInput.value;
+
+                        if (newName && newAmount !== '' && !isNaN(parseFloat(newAmount)) && parseFloat(newAmount) >= 0) {
+                            debtors[index].name = newName;
+                            debtors[index].amount = parseFloat(newAmount).toFixed(2);
+                            debtors[index].editing = false;
+                            saveAndRender();
+                            showNotification('Cambios guardados.', 'success');
+                        } else {
+                            showNotification('Nombre y monto deben ser válidos.', 'error');
+                        }
+                    }
+                }
+            }
+            
+            function saveAndRender() {
+                saveDebtors();
+                renderDebtors();
+            }
+
+            // --- Event Listeners ---
+            debtorsList.addEventListener('click', handleDebtorListClick);
+            addRowBtn.addEventListener('click', addRow);
+
+            // --- Inicialización ---
+            saveAndRender();
+        });
+    </script>
+</body>
+</html>
