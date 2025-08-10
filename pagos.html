@@ -14,23 +14,23 @@
         /* Estilo personalizado para la fuente Inter */
         body {
             font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent; /* Evita el destello azul en móviles al tocar */
         }
         /* Estilo para el mensaje de notificación */
         .notification {
             position: fixed;
             top: 20px;
-            right: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             padding: 1rem 1.5rem;
             border-radius: 0.5rem;
             color: white;
             z-index: 1000;
             opacity: 0;
-            transform: translateY(-20px);
             transition: opacity 0.3s ease, transform 0.3s ease;
         }
         .notification.show {
             opacity: 1;
-            transform: translateY(0);
         }
         .notification.success {
             background-color: #28a745; /* Verde */
@@ -50,30 +50,30 @@
 </head>
 <body class="bg-gray-100 text-gray-800">
 
-    <div class="container mx-auto p-4 sm:p-6 lg:p-8 max-w-5xl">
+    <div class="container mx-auto p-2 sm:p-4 md:p-6 max-w-5xl">
         <!-- Encabezado de la aplicación -->
-        <header class="text-center mb-8">
-            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">Control de Pagos de Transporte</h1>
-            <p class="text-gray-600 mt-2">Gestiona los pagos pendientes de forma sencilla.</p>
+        <header class="text-center my-4 sm:my-8">
+            <h1 class="text-2xl sm:text-4xl font-bold text-gray-900">Control de Pagos de Transporte</h1>
+            <p class="text-gray-600 mt-2 text-sm sm:text-base">Gestiona los pagos pendientes de forma sencilla.</p>
         </header>
 
         <main>
             <!-- Columna para la lista de deudores y el total -->
-            <div class="bg-white p-6 rounded-lg shadow-md">
-                <div class="flex flex-wrap justify-between items-center mb-4 pb-4 border-b border-gray-200 gap-4">
-                    <h2 class="text-2xl font-semibold">Lista de Deudores</h2>
-                    <div class="flex flex-wrap gap-x-6 gap-y-2 text-right">
-                        <div>
+            <div class="bg-white p-3 sm:p-6 rounded-lg shadow-md">
+                <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 pb-4 border-b border-gray-200 gap-4">
+                    <h2 class="text-xl sm:text-2xl font-semibold">Lista de Deudores</h2>
+                    <div class="w-full flex justify-between sm:justify-end sm:gap-x-4 gap-y-2 text-right">
+                        <div class="text-xs sm:text-base">
                             <p class="text-gray-600">Recaudado (Mes):</p>
-                            <p id="total-collected" class="text-xl font-bold text-green-600">₡0.00</p>
+                            <p id="total-collected" class="text-base sm:text-xl font-bold text-green-600">₡0.00</p>
                         </div>
-                        <div>
-                            <p class="text-gray-600">Total Pendiente:</p>
-                            <p id="total-amount" class="text-xl font-bold text-red-600">₡0.00</p>
+                        <div class="text-xs sm:text-base">
+                            <p class="text-gray-600">Pendiente:</p>
+                            <p id="total-amount" class="text-base sm:text-xl font-bold text-red-600">₡0.00</p>
                         </div>
-                        <div>
-                            <p class="text-gray-600">Total General:</p>
-                            <p id="total-general" class="text-xl font-bold text-gray-800">₡0.00</p>
+                        <div class="text-xs sm:text-base">
+                            <p class="text-gray-600">General:</p>
+                            <p id="total-general" class="text-base sm:text-xl font-bold text-gray-800">₡0.00</p>
                         </div>
                     </div>
                 </div>
@@ -85,7 +85,7 @@
                     </div>
                 </div>
                 <div class="mt-4">
-                    <button id="add-row-btn" class="w-full bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-md hover:bg-gray-300 transition-colors duration-300">
+                    <button id="add-row-btn" class="w-full bg-gray-200 text-gray-700 font-bold py-3 px-4 rounded-md hover:bg-gray-300 transition-colors duration-300 active:bg-gray-400">
                         + Agregar Fila
                     </button>
                 </div>
@@ -165,9 +165,9 @@
                         
                         debtorEl.innerHTML = `
                             <div class="w-8 text-gray-500 font-medium">${index + 1}.</div>
-                            <div class="flex-grow">${nameContent}</div>
-                            <div class="w-4/12 md:w-3/12 pr-4">${amountContent}</div>
-                            <div class="w-auto flex justify-end items-center space-x-2 md:space-x-4">
+                            <div class="flex-grow pr-2">${nameContent}</div>
+                            <div class="w-1/3 sm:w-1/4 pr-2">${amountContent}</div>
+                            <div class="w-auto flex justify-end items-center space-x-2 sm:space-x-3">
                                 <input type="checkbox" data-index="${index}" class="paid-checkbox h-5 w-5 rounded border-gray-400 text-blue-600 focus:ring-blue-500 cursor-pointer" ${isPaid ? 'checked' : ''} ${isEditing ? 'disabled' : ''}>
                                 ${actionIcon}
                                 <button data-index="${index}" class="delete-btn text-gray-400 hover:text-red-600">
