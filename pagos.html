@@ -232,7 +232,7 @@
                 if (isNaN(index)) return;
 
                 if (button.classList.contains('delete-btn')) {
-                    if (debtors[index].editing) return; 
+                    // Se permite borrar aunque se esté editando, para cancelar la adición de una fila nueva.
                     const password = prompt("Para confirmar la eliminación, ingresa la clave:");
                     if (password === '8384') {
                         debtors.splice(index, 1);
