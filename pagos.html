@@ -82,12 +82,10 @@
             <!-- Columna para la lista de deudores y el total -->
             <div class="bg-white p-3 sm:p-6 rounded-lg shadow-md">
                 <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 pb-4 border-b border-gray-200 gap-4">
-                    <h2 class="text-xl sm:text-2xl font-semibold">Lista de Deudores</h2>
-                    <div class="w-full flex justify-between sm:justify-end sm:gap-x-4 gap-y-2 text-right">
-                        <div class="text-xs sm:text-base">
-                            <p class="text-gray-600">Recaudado (Mes):</p>
-                            <p id="total-collected" class="text-base sm:text-xl font-bold text-green-600">₡0.00</p>
-                        </div>
+                    <div class="flex-grow">
+                         <h2 class="text-xl sm:text-2xl font-semibold">Lista de Deudores</h2>
+                    </div>
+                    <div class="w-full sm:w-auto flex justify-between sm:justify-end sm:gap-x-4 gap-y-2 text-right">
                         <div class="text-xs sm:text-base">
                             <p class="text-gray-600">Pendiente:</p>
                             <p id="total-amount" class="text-base sm:text-xl font-bold text-red-600">₡0.00</p>
@@ -97,6 +95,11 @@
                             <p id="total-general" class="text-base sm:text-xl font-bold text-gray-800">₡0.00</p>
                         </div>
                     </div>
+                </div>
+                 <div class="mb-4">
+                    <button id="reset-month-btn" class="w-full bg-yellow-500 text-white font-bold py-2 px-4 rounded-md hover:bg-yellow-600 transition-colors duration-300 active:bg-yellow-700">
+                        Reiniciar Mes
+                    </button>
                 </div>
                 <!-- Contenedor de la lista de deudores -->
                 <div id="debtors-list-container">
@@ -135,9 +138,9 @@
             // Referencias a los elementos del DOM
             const debtorsList = document.getElementById('debtors-list');
             const totalAmountEl = document.getElementById('total-amount');
-            const totalCollectedEl = document.getElementById('total-collected');
             const totalGeneralEl = document.getElementById('total-general');
             const bottomActionButton = document.getElementById('bottom-action-btn');
+            const resetMonthBtn = document.getElementById('reset-month-btn');
             const notificationEl = document.getElementById('notification');
             const deleteModal = document.getElementById('delete-modal');
             const passwordInput = document.getElementById('delete-password-input');
@@ -146,21 +149,22 @@
 
             let indexToDelete = null;
 
-            // Lista inicial de deudores
+            // Lista inicial de deudores actualizada
             const initialDebtors = [
-                { id: 1, name: 'Elvira', amount: '30000.00', date: '2025-08-10', paid: true },
-                { id: 2, name: 'Rocio', amount: '50000.00', date: '2025-08-10', paid: false },
-                { id: 3, name: 'Marielos', amount: '30000.00', date: '2025-08-10', paid: false },
-                { id: 4, name: 'Gudelia', amount: '35000.00', date: '2025-08-10', paid: true },
-                { id: 5, name: 'Bertilia', amount: '30000.00', date: '2025-07-10', paid: true },
-                { id: 6, name: 'Elizabeth', amount: '40000.00', date: '2025-08-10', paid: true },
-                { id: 7, name: 'Josefa', amount: '35000.00', date: '2025-08-10', paid: true },
-                { id: 8, name: 'Carmen', amount: '35000.00', date: '2025-08-10', paid: true },
-                { id: 9, name: 'Margarita', amount: '40000.00', date: '2025-08-10', paid: true },
-                { id: 10, name: 'Nannys', amount: '10000.00', date: '2025-08-10', paid: true },
-                { id: 11, name: 'Carmencita', amount: '30000.00', date: '2025-08-10', paid: true },
-                { id: 12, name: 'Don Amibal', amount: '50000.00', date: '2025-08-10', paid: false },
-                { id: 13, name: 'Fanny', amount: '45000.00', date: '2025-07-10', paid: true }
+                { id: 1, name: 'Elvira', amount: '30000.00', paid: true },
+                { id: 2, name: 'Rocio', amount: '50000.00', paid: true },
+                { id: 3, name: 'Marielos', amount: '30000.00', paid: true },
+                { id: 4, name: 'Gudelia', amount: '35000.00', paid: true },
+                { id: 5, name: 'Bertilia', amount: '30000.00', paid: true },
+                { id: 6, name: 'Elizabeth', amount: '40000.00', paid: true },
+                { id: 7, name: 'Josefa', amount: '35000.00', paid: true },
+                { id: 8, name: 'Carmen', amount: '35000.00', paid: true },
+                { id: 9, name: 'Margarita', amount: '40000.00', paid: true },
+                { id: 10, name: 'Nannys', amount: '10000.00', paid: true },
+                { id: 11, name: 'Carmencita', amount: '30000.00', paid: true },
+                { id: 12, name: 'Anibal', amount: '50000.00', paid: true },
+                { id: 13, name: 'Fanny', amount: '45000.00', paid: true },
+                { id: 14, name: 'Priscila', amount: '50000.00', paid: true }
             ];
 
             let debtors = JSON.parse(localStorage.getItem('debtors'));
@@ -225,18 +229,6 @@
                 const totalPending = debtors.filter(d => !d.paid).reduce((sum, d) => sum + parseFloat(d.amount), 0);
                 totalAmountEl.textContent = formatCurrency(totalPending);
 
-                const now = new Date();
-                const currentMonth = now.getMonth();
-                const currentYear = now.getFullYear();
-                
-                const totalCollectedThisMonth = debtors
-                    .filter(d => {
-                        const paymentDate = new Date(d.date);
-                        return d.paid && paymentDate.getMonth() === currentMonth && paymentDate.getFullYear() === currentYear;
-                    })
-                    .reduce((sum, d) => sum + parseFloat(d.amount), 0);
-                totalCollectedEl.textContent = formatCurrency(totalCollectedThisMonth);
-
                 const totalGeneral = debtors.reduce((sum, d) => sum + parseFloat(d.amount), 0);
                 totalGeneralEl.textContent = formatCurrency(totalGeneral);
 
@@ -279,10 +271,19 @@
             function addRow() {
                 saveChanges(); // Guardar cualquier edición pendiente antes de agregar una nueva fila
                 debtors.forEach(d => d.editing = false);
-                const today = new Date().toISOString().split('T')[0];
-                const newDebtor = { id: Date.now(), name: 'Nuevo Deudor', amount: '0.00', date: today, paid: false, editing: true };
+                const newDebtor = { id: Date.now(), name: 'Nuevo Deudor', amount: '0.00', paid: false, editing: true };
                 debtors.push(newDebtor);
                 saveAndRender();
+            }
+            
+            function resetMonth() {
+                if (confirm("¿Estás seguro de que deseas reiniciar todos los pagos para un nuevo mes? Esta acción desmarcará todas las casillas.")) {
+                    debtors.forEach(debtor => {
+                        debtor.paid = false;
+                    });
+                    saveAndRender();
+                    showNotification('Se ha iniciado un nuevo mes de cobro.', 'success');
+                }
             }
 
             function handleBottomButtonClick() {
@@ -349,6 +350,7 @@
             // --- Event Listeners ---
             debtorsList.addEventListener('click', handleDebtorListClick);
             bottomActionButton.addEventListener('click', handleBottomButtonClick);
+            resetMonthBtn.addEventListener('click', resetMonth);
             confirmDeleteBtn.addEventListener('click', confirmDelete);
             cancelDeleteBtn.addEventListener('click', closeDeleteModal);
             deleteModal.addEventListener('click', (e) => {
